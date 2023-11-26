@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="css/style.css">
+	<title>Snake Game Test Task</title>
+</head>
+
+<body>
+
+	<div class="keys"></div>
+
+	<div class="game-container">
+		<div class='game-field-container'>
+			<div class="game-field"></div>
+		</div>
+		<div class="gui">
+			<div class='score-container'>
+				<div class="score-label">
+					<span class="label">Current Score:</span>
+					<span id="currentScore" class="label">0</span>
+				</div>
+				<div class="score-label">
+					<span class="label">Best Score:</span>
+					<span id="bestScore" class="label">0</span>
+				</div>
+			</div>
+			<div class="radio-list">
+				<label class="radio-button">
+					<input type="radio" name="gameMode" value="classic" checked> Classic
+				</label>
+				<label class="radio-button">
+					<input type="radio" name="gameMode" value="noDie"> No Die
+				</label>
+				<label class="radio-button">
+					<input type="radio" name="gameMode" value="walls"> Walls
+				</label>
+				<label class="radio-button">
+					<input type="radio" name="gameMode" value="portal"> Portal
+				</label>
+				<label class="radio-button">
+					<input type="radio" name="gameMode" value="speed"> Speed
+				</label>
+			</div>
+			<div class='buttons-group'>
+				<button id="playButton" class="button">Play</button>
+				<button id="exitButton" class="button">Exit</button>
+			</div>
+		</div>
+	</div>
+
+	<script src='js/pixi.min.js'></script>
+	<script src='js/main.js'></script>
+</body>
+
+</html>

@@ -1,0 +1,99 @@
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+body {
+	max-height: 100vh;
+	overflow: hidden;
+}
+
+.keys {
+	position: absolute;
+	top: 2rem;
+	left: 2rem;
+	color: #fff;
+	font-weight: 600;
+}
+
+.game-container {
+	width: 100vw;
+	height: 100vh;
+	background-color: #9bba5a;
+	display: flex;
+	justify-content: center;
+}
+
+.game-field-container {
+	flex: 4;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.game-field {
+	border: 0.25rem solid #272f17;
+	height: 60%;
+	width: 55%;
+}
+
+.gui {
+	flex: 1;
+	padding: 2rem;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	background-color: rgba(0, 0, 0, 0.3);
+	gap: 2rem;
+}
+
+.label {
+	font-family: sans-serif;
+	font-size: 1rem;
+	color: #fff;
+}
+
+.score-container {
+	display: flex;
+	justify-content: space-between;
+	gap: 1rem;
+}
+
+.score-label {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.score-label .label:nth-child(2) {
+	margin-top: 0.5rem;
+}
+
+.radio-list {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.radio-button {
+	margin-bottom: 5px;
+}
+
+.buttons-group {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.button {
+	padding: 0.8rem 1rem;
+	background-color: #ffffff39;
+	color: #fff;
+	border: none;
+	cursor: pointer;
+}
+
+canvas {
+	background-color: transparent !important;
+}
