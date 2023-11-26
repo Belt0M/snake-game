@@ -1,3 +1,6 @@
+const TILE_SIZE = 20
+const INIT_SNAKE_LENGTH = 3
+
 const gameField = document.querySelector('.game-field')
 
 let tickerId
@@ -15,106 +18,43 @@ class Game {
 	constructor() {
 		this.snake = new Snake()
 		this.food = new Food(this)
-		this.bestScore = 0
+		this.tileSize = 20
+		this.bestScore = localStorage.getItem('bestScore') || 0
 		this.currentScore = 0
 		this.gameMode = 'Classic' // Default game mode
-		// this.setupGUI()
+		this.updateScores()
 	}
-
-	// setupGUI() {
-	// 	const guiContainer = new PIXI.Container()
-	// 	app.stage.addChild(guiContainer)
-
-	// 	// Labels
-	// 	const bestScoreLabel = new PIXI.Text('Best Score: 0', { fill: 0xffffff })
-	// 	bestScoreLabel.position.set(10, 10)
-	// 	guiContainer.addChild(bestScoreLabel)
-
-	// 	const currentScoreLabel = new PIXI.Text('Current Score: 0', {
-	// 		fill: 0xffffff,
-	// 	})
-	// 	currentScoreLabel.position.set(10, 30)
-	// 	guiContainer.addChild(currentScoreLabel)
-
-	// 	// Buttons and Radio List
-	// 	const playButton = new PIXI.Text('Play', { fill: 0xffffff })
-	// 	playButton.position.set(10, 70)
-	// 	playButton.interactive = true
-	// 	playButton.buttonMode = true
-	// 	playButton.on('pointerdown', () => this.playGame())
-	// 	guiContainer.addChild(playButton)
-
-	// 	const exitButton = new PIXI.Text('Exit', { fill: 0xffffff })
-	// 	exitButton.position.set(80, 70)
-	// 	exitButton.interactive = true
-	// 	exitButton.buttonMode = true
-	// 	exitButton.on('pointerdown', () => this.exitGame())
-	// 	guiContainer.addChild(exitButton)
-
-	// 	const menuButton = new PIXI.Text('Menu', { fill: 0xffffff })
-	// 	menuButton.position.set(150, 70)
-	// 	menuButton.interactive = true
-	// 	menuButton.buttonMode = true
-	// 	menuButton.on('pointerdown', () => this.showMenu())
-	// 	guiContainer.addChild(menuButton)
-
-	// 	const gameModes = ['Classic', 'No Die', 'Walls', 'Portal', 'Speed']
-	// 	const radioList = new PIXI.Text('Game Modes: ', { fill: 0xffffff })
-	// 	radioList.position.set(10, 100)
-	// 	guiContainer.addChild(radioList)
-
-	// 	gameModes.forEach((mode, index) => {
-	// 		const radioItem = new PIXI.Text(mode, { fill: 0xffffff })
-	// 		radioItem.position.set(10 + index * 70, 120)
-	// 		radioItem.interactive = true
-	// 		radioItem.buttonMode = true
-	// 		radioItem.on('pointerdown', () => this.setGameMode(mode))
-	// 		guiContainer.addChild(radioItem)
-	// 	})
-	// }
 
 	update() {
 		this.snake.move()
 		this.checkFoodCollision()
-		// this.updateScores()
+		this.snake.checkCollision()
 	}
 
 	checkFoodCollision() {
-		const head = this.snake.body[0]
-
-		if (head.x === this.food.position.x && head.y === this.food.position.y) {
+		const head = this.snake.body.at(-1)
+		const foodX = this.food.position.x
+		const foodY = this.food.position.y
+		if (
+			(head.x === foodX || head.x === foodX + TILE_SIZE - 1) &&
+			(head.y === foodY || head.y === foodY + TILE_SIZE - 1)
+		) {
 			this.snake.grow()
+			this.food.clear()
 			this.food.spawnFood()
-			// this.updateScores()
+			this.updateScores()
 		}
 	}
 
-	// updateScores() {
-	// 	this.currentScore = this.snake.body.length - 3
-	// 	if (this.currentScore > this.bestScore) {
-	// 		this.bestScore = this.currentScore
-	// 	}
-
-	// 	// Update GUI
-	// 	const guiContainer = app.stage.children[0]
-
-	// 	// Find bestScoreLabel and currentScoreLabel
-	// 	const bestScoreLabel = guiContainer.children.find(
-	// 		child => child.text && child.text.startsWith('Best Score')
-	// 	)
-	// 	const currentScoreLabel = guiContainer.children.find(
-	// 		child => child.text && child.text.startsWith('Current Score')
-	// 	)
-
-	// 	// Check if labels are found before updating
-	// 	if (bestScoreLabel) {
-	// 		bestScoreLabel.text = `Best Score: ${this.bestScore}`
-	// 	}
-
-	// 	if (currentScoreLabel) {
-	// 		currentScoreLabel.text = `Current Score: ${this.currentScore}`
-	// 	}
-	// }
+	updateScores() {
+		this.currentScore = this.snake.body.length - INIT_SNAKE_LENGTH
+		if (this.currentScore > this.bestScore) {
+			this.bestScore = this.currentScore
+		}
+		localStorage.setItem('bestScore', this.bestScore)
+		document.querySelector('#currentScore').innerHTML = this.currentScore
+		document.querySelector('#bestScore').innerHTML = this.bestScore
+	}
 
 	playGame() {
 		// Implement logic to start the game
@@ -154,9 +94,9 @@ class Snake {
 		for (let i = 0; i < initialLength; i++) {
 			this.body.push(new PIXI.Graphics())
 			this.body[i].beginFill(0x272f17)
-			this.body[i].drawRect(0, 0, 20, 20)
+			this.body[i].drawRect(0, 0, TILE_SIZE, TILE_SIZE)
 			this.body[i].endFill()
-			this.body[i].position.set(20 + i * 20, 20)
+			this.body[i].position.set(TILE_SIZE + i * TILE_SIZE, TILE_SIZE)
 
 			app.stage.addChild(this.body[i])
 		}
@@ -192,21 +132,24 @@ class Snake {
 		}
 		if (['down', 'up'].includes(currentDirection)) {
 			let mult = currentDirection === 'down' ? 1 : -1
-			head.y += 20 * mult
+			head.y += TILE_SIZE * mult
 		} else {
 			let mult = currentDirection === 'right' ? 1 : -1
-			head.x += 20 * mult
+			head.x += TILE_SIZE * mult
 		}
 	}
 
 	grow() {
-		const tail = this.body[this.body.length - 1]
+		const tail = this.body[0]
+		console.log('Tail: ', tail.x, tail.y)
+		console.log('New: ', tail.x - TILE_SIZE, tail.y)
 		const newPart = new PIXI.Graphics()
 		newPart.beginFill(0x272f17)
-		newPart.drawRect(tail.x, tail.y, 20, 20)
+		newPart.drawRect(0, 0, TILE_SIZE, TILE_SIZE)
 		newPart.endFill()
+		newPart.position.set(tail.x, tail.y)
 		app.stage.addChild(newPart)
-		this.body.push(newPart)
+		this.body.unshift(newPart)
 	}
 
 	checkCollision() {
@@ -227,7 +170,6 @@ class Snake {
 
 		// Check collision with itself
 		for (let i = 0; i < this.body.length - 2; i++) {
-			console.log(head.x)
 			if (head.x === this.body[i].x && head.y === this.body[i].y) {
 				// Handle game over logic here
 				clearInterval(tickerId)
@@ -245,17 +187,26 @@ class Food {
 		this.spawnFood()
 	}
 
+	clear() {
+		// Remove the food sprite from the stage
+		app.stage.removeChild(this.foodSprite)
+	}
+
 	spawnFood() {
 		// Generate random position for food
-		const x = Math.floor(Math.random() * 20) * 20
-		const y = Math.floor(Math.random() * 20) * 20
+		const x = Math.floor(Math.random() * TILE_SIZE) * TILE_SIZE
+		const y = Math.floor(Math.random() * TILE_SIZE) * TILE_SIZE
 
 		// Check if food doesn't spawn on the snake
 		const snakePositions = this.game.snake.body.map(part => ({
 			x: part.x,
 			y: part.y,
 		}))
-		const isFoodOnSnake = snakePositions.some(pos => pos.x === x && pos.y === y)
+		const isFoodOnSnake = snakePositions.some(
+			pos =>
+				(pos.x === x || pos.x === x + TILE_SIZE) &&
+				(pos.y === y || pos.y === y + TILE_SIZE)
+		)
 
 		if (isFoodOnSnake) {
 			// If food is on the snake, recursively call spawnFood until it's in a valid position
@@ -264,11 +215,16 @@ class Food {
 			this.position = { x, y }
 
 			// Draw food on the screen
-			const graphics = new PIXI.Graphics()
-			graphics.beginFill(0xff0000)
-			graphics.drawRect(this.position.x, this.position.y, 20, 20)
-			graphics.endFill()
-			app.stage.addChild(graphics)
+			this.foodSprite = new PIXI.Graphics()
+			this.foodSprite.beginFill(0xff0000)
+			this.foodSprite.drawRect(
+				this.position.x,
+				this.position.y,
+				TILE_SIZE,
+				TILE_SIZE
+			)
+			this.foodSprite.endFill()
+			app.stage.addChild(this.foodSprite)
 		}
 	}
 }
@@ -277,8 +233,7 @@ const game = new Game()
 
 tickerId = setInterval(() => {
 	game.update()
-	game.snake.checkCollision()
-}, 75)
+}, 60)
 
 // app.ticker.add(() => {
 // 	game.update()
