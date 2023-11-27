@@ -21,8 +21,34 @@ class Game {
 		this.tileSize = 20
 		this.bestScore = localStorage.getItem('bestScore') || 0
 		this.currentScore = 0
-		this.gameMode = 'Classic' // Default game mode
+		this.gameMode = 'classic' // Default game mode (classic, noDie, walls, portal, speed)
 		this.updateScores()
+	}
+
+	startGameLoop() {
+		tickerId = setInterval(() => {
+			this.update()
+		}, 60)
+	}
+
+	showMenu() {
+		// Implement logic to show the menu
+		console.log('Showing the menu!')
+		clearInterval(tickerId)
+	}
+
+	playGame() {
+		// Implement logic to start the game
+		console.log('Playing the game!')
+		document.querySelector('.menu-container').style.display = 'none'
+		document.querySelector('.game-container').style.display = 'flex'
+		setTimeout(() => this.startGameLoop(), 250)
+	}
+
+	exitGame() {
+		// Implement logic to exit the game
+		console.log('Exiting the game!')
+		clearInterval(tickerId)
 	}
 
 	update() {
@@ -54,21 +80,6 @@ class Game {
 		localStorage.setItem('bestScore', this.bestScore)
 		document.querySelector('#currentScore').innerHTML = this.currentScore
 		document.querySelector('#bestScore').innerHTML = this.bestScore
-	}
-
-	playGame() {
-		// Implement logic to start the game
-		console.log('Playing the game!')
-	}
-
-	exitGame() {
-		// Implement logic to exit the game
-		console.log('Exiting the game!')
-	}
-
-	showMenu() {
-		// Implement logic to show the menu
-		console.log('Showing the menu!')
 	}
 
 	setGameMode(mode) {
@@ -231,10 +242,29 @@ class Food {
 
 const game = new Game()
 
-tickerId = setInterval(() => {
-	game.update()
-}, 60)
+// Listeners and other...
+window.onload = () => {
+	document
+		.querySelector('#exitButton')
+		.addEventListener('click', () => game.exitGame())
+	document
+		.querySelector('#playButton')
+		.addEventListener('click', () => game.playGame())
 
+	// Mode buttons toggling
+	const radioButtons = document.querySelectorAll('.radio-button')
+
+	radioButtons.forEach(btn => {
+		btn.firstElementChild.addEventListener('change', function () {
+			radioButtons.forEach(function (rb) {
+				rb.classList.remove('active')
+			})
+			game.gameMode = this.value
+			console.log(game.gameMode)
+			this.closest('.radio-button').classList.add('active')
+		})
+	})
+}
 // app.ticker.add(() => {
 // 	game.update()
 // 	game.snake.checkCollision()

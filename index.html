@@ -12,23 +12,16 @@
 
 	<div class="keys"></div>
 
-	<div class="game-container">
-		<div class='game-field-container'>
-			<div class="game-field"></div>
-		</div>
-		<div class="gui">
-			<div class='score-container'>
-				<div class="score-label">
-					<span class="label">Current Score:</span>
-					<span id="currentScore" class="label">0</span>
-				</div>
-				<div class="score-label">
-					<span class="label">Best Score:</span>
-					<span id="bestScore" class="label">0</span>
-				</div>
+	<div class="menu-container">
+		<div class='menu-wrapper'>
+			<h1>Snake Game</h1>
+			<p>By Markiian Berehovskyi</p>
+			<div class="btns">
+				<button id='playButton'>Play</button>
+				<button id='exitButton'>Exit</button>
 			</div>
 			<div class="radio-list">
-				<label class="radio-button">
+				<label class="radio-button active">
 					<input type="radio" name="gameMode" value="classic" checked> Classic
 				</label>
 				<label class="radio-button">
@@ -44,9 +37,23 @@
 					<input type="radio" name="gameMode" value="speed"> Speed
 				</label>
 			</div>
-			<div class='buttons-group'>
-				<button id="playButton" class="button">Play</button>
-				<button id="exitButton" class="button">Exit</button>
+		</div>
+	</div>
+
+	<div class="game-container">
+		<div class='game-field-container'>
+			<div class="game-field"></div>
+		</div>
+		<div class="gui">
+			<div class='score-container'>
+				<div class="score-label">
+					<span class="label">Current Score:</span>
+					<span id="currentScore" class="label">0</span>
+				</div>
+				<div class="score-label">
+					<span class="label">Best Score:</span>
+					<span id="bestScore" class="label">0</span>
+				</div>
 			</div>
 		</div>
 	</div>
