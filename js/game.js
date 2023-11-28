@@ -154,7 +154,6 @@ class Game {
 
 	// Check walls collision
 	checkWallsCollision() {
-		console.log(this.walls)
 		const head = this.snake.body.at(-1)
 
 		for (const wall of this.walls) {

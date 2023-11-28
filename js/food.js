@@ -28,7 +28,6 @@ class Food {
 		this.game.food.position = this.game.food.position.filter(
 			food => food.x !== x || food.y !== y
 		)
-
 		toDelete.destroy()
 	}
 
