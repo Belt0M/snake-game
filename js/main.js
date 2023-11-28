@@ -4,11 +4,12 @@ const INIT_SNAKE_LENGTH = 3
 const gameField = document.querySelector('.game-field')
 
 let tickerId
-
+console.log(gameField.clientWidth, gameField.clientHeight)
 let app = new PIXI.Application({
-	width: gameField.clientWidth,
-	height: gameField.clientHeight,
-	backgroundColor: '#9bba5a',
+	width: 600,
+	height: 400,
+	// backgroundColor: '#9bba5a',
+	backgroundAlpha: 0,
 })
 gameField.appendChild(app.view)
 
@@ -51,6 +52,21 @@ class Game {
 		// Implement logic to exit the game
 		console.log('Exiting the game!')
 		clearInterval(tickerId)
+		document.querySelector('.menu-container').style.display = 'flex'
+		document.querySelector('.game-container').style.display = 'none'
+		app.stage.children = []
+		game = new Game()
+	}
+
+	stopGame() {
+		console.log('Stop the game!')
+		clearInterval(tickerId)
+		document.querySelector('.game-over').style.display = 'flex'
+	}
+
+	reloadGame() {
+		app.stage.children = []
+		this.playGame()
 	}
 
 	update() {
@@ -88,9 +104,6 @@ class Game {
 				case 'walls':
 					this.generateWall()
 					break
-				case 'portal':
-					// this.handlePortalMode()
-					break
 				case 'speed':
 					clearInterval(tickerId)
 					this.speed *= 0.9
@@ -113,12 +126,15 @@ class Game {
 				(head.x === foodX || head.x === foodX + TILE_SIZE - 1) &&
 				(head.y === foodY || head.y === foodY + TILE_SIZE - 1)
 			) {
-				console.log(food.x, food.y)
 				this.snake.grow()
 				this.food.clearExact(foodX, foodY)
+				head.x = this.food.position.at(-1).x
+				head.y = this.food.position.at(-1).y
+				this.food.clearExact(head.x, head.y)
+				// this.handlePortalMode()
+				this.food.spawnFood()
 				this.food.spawnFood()
 				this.updateScores()
-				// this.handlePortalMode()
 			}
 		})
 	}
@@ -161,8 +177,9 @@ class Game {
 				head.y < wall.y + wall.height &&
 				head.y + TILE_SIZE > wall.y
 			) {
-				clearInterval(tickerId)
-				alert('Game Over - Hit the wall!')
+				this.stopGame()
+				// this.reloadGame()
+
 				return
 			}
 		}
@@ -252,8 +269,8 @@ class Snake {
 			head.y >= app.screen.height
 		) {
 			// Handle game over logic here
-			clearInterval(tickerId)
-			alert('Game Over - Hit the wall!')
+			game.stopGame()
+			// game.reloadGame()
 			return
 		}
 
@@ -261,8 +278,8 @@ class Snake {
 		for (let i = 0; i < this.body.length - 2; i++) {
 			if (head.x === this.body[i].x && head.y === this.body[i].y) {
 				// Handle game over logic here
-				clearInterval(tickerId)
-				alert('Game Over - Hit yourself!')
+				game.stopGame()
+				// game.reloadGame()
 				return
 			}
 		}
@@ -273,11 +290,11 @@ class Snake {
 
 		// Check collision with walls
 		if (head.x < 0) {
-			head.x = app.screen.width - 1
+			head.x = app.screen.width
 		} else if (head.x >= app.screen.width) {
 			head.x = 0
 		} else if (head.y < 0) {
-			head.y = app.screen.height - 1
+			head.y = app.screen.height
 		} else if (head.y >= app.screen.height) {
 			head.y = 0
 		}
@@ -300,24 +317,21 @@ class Food {
 
 	clear() {
 		// Remove the food sprite from the stage
-		console.log(this.foodSprite)
-		console.log(app.stage)
 		app.stage.removeChild(this.foodSprite)
 	}
 
 	clearExact(x, y) {
-		// console.log(this.foodSprite)
-		console.log(app.stage.children)
 		let toDelete = this.foodSprite.find(food => {
 			return food.x === x && food.y === y
 		})
-		// console.log(toDelete)
 		this.foodSprite = this.foodSprite.filter(
 			food => food.x !== x || food.y !== y
 		)
-		app.stage.removeChild(toDelete)
-		console.log(app.stage.children)
-		// console.log(this.foodSprite)
+		this.game.food.position = this.game.food.position.filter(
+			food => food.x !== x || food.y !== y
+		)
+
+		toDelete.destroy()
 	}
 
 	spawnFood() {
@@ -389,7 +403,7 @@ class Wall {
 	}
 }
 
-const game = new Game()
+let game = new Game()
 
 // Listeners and other...
 window.onload = () => {
@@ -398,6 +412,13 @@ window.onload = () => {
 		.addEventListener('click', () => game.exitGame())
 	document.querySelector('#playButton').addEventListener('click', () => {
 		game.playGame()
+	})
+	document.querySelector('.game-menu').addEventListener('click', () => {
+		game.exitGame()
+	})
+	document.querySelector('.game-over').addEventListener('click', function () {
+		this.style.display = 'none'
+		game.exitGame()
 	})
 
 	// Mode buttons toggling

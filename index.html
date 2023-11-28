@@ -5,6 +5,10 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="css/style.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta2/css/all.min.css"
+		integrity="sha512-YWzhKL2whUzgiheMoBFwW8CKV4qpHQAEuvilg9FAn5VJUDwKZZxkJNuGM4XkWuk94WCrrwslk8yWNGmY1EduTA=="
+		crossorigin="anonymous" referrerpolicy="no-referrer" />
+
 	<title>Snake Game Test Task</title>
 </head>
 
@@ -43,19 +47,22 @@
 	<div class="game-container">
 		<div class='game-field-container'>
 			<div class="game-field"></div>
-		</div>
-		<div class="gui">
 			<div class='score-container'>
 				<div class="score-label">
-					<span class="label">Current Score:</span>
 					<span id="currentScore" class="label">0</span>
 				</div>
 				<div class="score-label">
-					<span class="label">Best Score:</span>
+					<i class="fa-solid fa-crown"></i>
 					<span id="bestScore" class="label">0</span>
 				</div>
 			</div>
+			<div class="game-over">
+				<span>Game Over!</span>
+			</div>
 		</div>
+		<button class='game-menu'>
+			<i class="fa-solid fa-bars"></i>
+		</button>
 	</div>
 
 	<script src='js/pixi.min.js'></script>
