@@ -17,18 +17,19 @@ gameField.appendChild(app.view)
 class Game {
 	constructor() {
 		this.snake = new Snake()
-		this.food = new Food(this)
 		this.tileSize = 20
 		this.bestScore = localStorage.getItem('bestScore') || 0
 		this.currentScore = 0
 		this.gameMode = 'classic' // Default game mode (classic, noDie, walls, portal, speed)
+		this.speed = 100
+		this.walls = []
 		this.updateScores()
 	}
 
 	startGameLoop() {
 		tickerId = setInterval(() => {
 			this.update()
-		}, 60)
+		}, this.speed)
 	}
 
 	showMenu() {
@@ -38,6 +39,7 @@ class Game {
 	}
 
 	playGame() {
+		this.food = new Food(this)
 		// Implement logic to start the game
 		console.log('Playing the game!')
 		document.querySelector('.menu-container').style.display = 'none'
@@ -53,8 +55,20 @@ class Game {
 
 	update() {
 		this.snake.move()
-		this.checkFoodCollision()
-		this.snake.checkCollision()
+		this.gameMode === 'portal'
+			? this.checkTwoFoodCollisions()
+			: this.checkFoodCollision()
+		switch (this.gameMode) {
+			case 'noDie':
+				this.snake.checkNoDieCollision()
+				break
+			case 'walls':
+				this.checkWallsCollision()
+				break
+			default:
+				this.snake.checkCollision()
+				break
+		}
 	}
 
 	checkFoodCollision() {
@@ -69,7 +83,44 @@ class Game {
 			this.food.clear()
 			this.food.spawnFood()
 			this.updateScores()
+
+			switch (this.gameMode) {
+				case 'walls':
+					this.generateWall()
+					break
+				case 'portal':
+					// this.handlePortalMode()
+					break
+				case 'speed':
+					clearInterval(tickerId)
+					this.speed *= 0.9
+					tickerId = setInterval(() => {
+						this.update()
+					}, this.speed)
+					break
+				default:
+					break
+			}
 		}
+	}
+
+	checkTwoFoodCollisions() {
+		const head = this.snake.body.at(-1)
+		this.food.position.forEach(food => {
+			const foodX = food.x
+			const foodY = food.y
+			if (
+				(head.x === foodX || head.x === foodX + TILE_SIZE - 1) &&
+				(head.y === foodY || head.y === foodY + TILE_SIZE - 1)
+			) {
+				console.log(food.x, food.y)
+				this.snake.grow()
+				this.food.clearExact(foodX, foodY)
+				this.food.spawnFood()
+				this.updateScores()
+				// this.handlePortalMode()
+			}
+		})
 	}
 
 	updateScores() {
@@ -86,6 +137,35 @@ class Game {
 		// Implement logic to set the game mode
 		console.log(`Setting game mode to ${mode}`)
 		this.gameMode = mode
+	}
+
+	generateWall() {
+		const wallColor = 0x291410
+
+		const wallX = Math.floor(Math.random() * TILE_SIZE) * TILE_SIZE
+		const wallY = Math.floor(Math.random() * TILE_SIZE) * TILE_SIZE
+
+		const wall = new Wall(wallX, wallY, TILE_SIZE, wallColor)
+
+		this.walls.push(wall)
+	}
+
+	checkWallsCollision() {
+		console.log(this.walls)
+		const head = this.snake.body.at(-1)
+
+		for (const wall of this.walls) {
+			if (
+				head.x < wall.x + wall.width &&
+				head.x + TILE_SIZE > wall.x &&
+				head.y < wall.y + wall.height &&
+				head.y + TILE_SIZE > wall.y
+			) {
+				clearInterval(tickerId)
+				alert('Game Over - Hit the wall!')
+				return
+			}
+		}
 	}
 }
 
@@ -152,8 +232,7 @@ class Snake {
 
 	grow() {
 		const tail = this.body[0]
-		console.log('Tail: ', tail.x, tail.y)
-		console.log('New: ', tail.x - TILE_SIZE, tail.y)
+
 		const newPart = new PIXI.Graphics()
 		newPart.beginFill(0x272f17)
 		newPart.drawRect(0, 0, TILE_SIZE, TILE_SIZE)
@@ -165,7 +244,6 @@ class Snake {
 
 	checkCollision() {
 		const head = this.body.at(-1)
-
 		// Check collision with walls
 		if (
 			head.x < 0 ||
@@ -189,18 +267,57 @@ class Snake {
 			}
 		}
 	}
+
+	checkNoDieCollision() {
+		const head = this.body.at(-1)
+
+		// Check collision with walls
+		if (head.x < 0) {
+			head.x = app.screen.width - 1
+		} else if (head.x >= app.screen.width) {
+			head.x = 0
+		} else if (head.y < 0) {
+			head.y = app.screen.height - 1
+		} else if (head.y >= app.screen.height) {
+			head.y = 0
+		}
+	}
 }
 
 class Food {
 	constructor(game) {
 		this.game = game
-		this.position = { x: 0, y: 0 }
+		if (this.game.gameMode === 'portal') {
+			this.position = []
+			this.foodSprite = []
+			this.spawnFood()
+		} else {
+			this.position = null
+			this.foodSprite = null
+		}
 		this.spawnFood()
 	}
 
 	clear() {
 		// Remove the food sprite from the stage
+		console.log(this.foodSprite)
+		console.log(app.stage)
 		app.stage.removeChild(this.foodSprite)
+	}
+
+	clearExact(x, y) {
+		// console.log(this.foodSprite)
+		console.log(app.stage.children)
+		let toDelete = this.foodSprite.find(food => {
+			return food.x === x && food.y === y
+		})
+		// console.log(toDelete)
+		this.foodSprite = this.foodSprite.filter(
+			food => food.x !== x || food.y !== y
+		)
+		app.stage.removeChild(toDelete)
+		console.log(app.stage.children)
+		// console.log(this.foodSprite)
 	}
 
 	spawnFood() {
@@ -223,20 +340,52 @@ class Food {
 			// If food is on the snake, recursively call spawnFood until it's in a valid position
 			this.spawnFood()
 		} else {
-			this.position = { x, y }
+			let foodSprite
+			if (this.game.gameMode === 'portal') {
+				this.position.push({ x, y })
+				this.foodSprite.push(new PIXI.Graphics())
+				foodSprite = this.foodSprite.at(-1)
+			} else {
+				this.position = { x, y }
+				this.foodSprite = new PIXI.Graphics()
+				foodSprite = this.foodSprite
+			}
 
 			// Draw food on the screen
-			this.foodSprite = new PIXI.Graphics()
-			this.foodSprite.beginFill(0xff0000)
-			this.foodSprite.drawRect(
-				this.position.x,
-				this.position.y,
-				TILE_SIZE,
-				TILE_SIZE
-			)
-			this.foodSprite.endFill()
-			app.stage.addChild(this.foodSprite)
+
+			foodSprite.beginFill(0xff0000)
+			foodSprite.drawRect(0, 0, TILE_SIZE, TILE_SIZE)
+			foodSprite.endFill()
+			foodSprite.position.set(x, y)
+			app.stage.addChild(foodSprite)
 		}
+	}
+}
+
+class Wall {
+	constructor(x, y, size, color) {
+		this.graphics = new PIXI.Graphics()
+		this.graphics.beginFill(color)
+		this.graphics.drawRect(0, 0, size, size)
+		this.graphics.endFill()
+		this.graphics.position.set(x, y)
+		app.stage.addChild(this.graphics)
+	}
+
+	get x() {
+		return this.graphics.x
+	}
+
+	get y() {
+		return this.graphics.y
+	}
+
+	get width() {
+		return this.graphics.width
+	}
+
+	get height() {
+		return this.graphics.height
 	}
 }
 
@@ -247,9 +396,9 @@ window.onload = () => {
 	document
 		.querySelector('#exitButton')
 		.addEventListener('click', () => game.exitGame())
-	document
-		.querySelector('#playButton')
-		.addEventListener('click', () => game.playGame())
+	document.querySelector('#playButton').addEventListener('click', () => {
+		game.playGame()
+	})
 
 	// Mode buttons toggling
 	const radioButtons = document.querySelectorAll('.radio-button')
@@ -259,8 +408,7 @@ window.onload = () => {
 			radioButtons.forEach(function (rb) {
 				rb.classList.remove('active')
 			})
-			game.gameMode = this.value
-			console.log(game.gameMode)
+			game.setGameMode(this.value)
 			this.closest('.radio-button').classList.add('active')
 		})
 	})
